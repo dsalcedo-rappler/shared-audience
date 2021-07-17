@@ -78,3 +78,23 @@ def export_to_sheet(df, link, sheet_name):
         valueInputOption = "RAW",
         body = body
     ).execute()
+
+def download_from_gdrive(link, colab_filename = 'Filename.csv'):
+    """
+    Downloads a csv form google drive and reutrns it as a pandas dataframe
+    """
+    import io
+    import pandas as pd
+    from googleapiclient.http import MediaIoBaseDownload
+
+    drive = authorize_api()['drive']
+    gdrive_id = link.split('/')[5]
+
+    request = drive.files().get_media(fileId = gdrive_id) 
+    fh = io.FileIO(colab_filename,'wb')
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+    
+    return pd.read_csv(colab_filename)
