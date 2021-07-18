@@ -5,19 +5,27 @@ Creates a csv for used to generate the network
 import time
 import pandas as pd
 import itertools
-from local_utils import get_agents, shared_audience
+from local_utils import get_agents, shared_audience, download_from_gsheets, download_from_gdrive
 
 tstart = time.perf_counter()
-input_file_posts = "data/sharktank-db-202104.csv"
-input_file_pages = "data/channels_202104_test.csv"
+# Import posts
+# input_file_posts = "data/sharktank-db-202104.csv"
+# df = pd.read_csv(input_file_posts)
+input_file_posts_link = "https://drive.google.com/file/d/1sE5NLYbI8NP2-00GQCTwm4bFWF0IwteR/view?usp=sharing"
+input_file_posts = download_from_gdrive(input_file_posts_link)
+df = pd.read_csv("Filename.csv")
+
+# Import pages
+# input_file_pages = "data/channels_202104_test.csv"
+# top100 = pd.read_csv(input_file_pages).head(100)
+input_file_pages_link = "https://docs.google.com/spreadsheets/d/1nVPbm98ZZCpbVF0vluvHxEPftz4lUtnAb9CZv0EF9ew/edit?usp=sharing"
+input_file_pages = download_from_gsheets(input_file_pages_link,sheet='channels_202104')
+top100 = input_file_pages.head(100)
+top100['linkEntityId'] = top100['linkEntityId'].astype(int)
+
 output_file = "results/top100_links_apr2021_test.csv"
 
-df = pd.read_csv(input_file_posts)
 df2 = df[~df['linkWebsite'].isna()]
-
-top100 = pd.read_csv(input_file_pages)
-top100 = top100.head(100)
-
 pages_df = top100
 num_pages = 100
 
@@ -44,7 +52,8 @@ for pair in pairs:
         print(f"Processed {counter} of {total_pairs} pairs")
 
 links = pd.DataFrame(links)
-links.to_csv(output_file,index=False)
+print(links.head())
+# links.to_csv(output_file,index=False)
 
 tend = time.perf_counter()
 print(f"Time elapsed: {tend-tstart}")
