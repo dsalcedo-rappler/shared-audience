@@ -5,41 +5,30 @@ Creates a csv for used to generate the network
 import time
 import pandas as pd
 import itertools
+from local_utils import get_agents, shared_audience, download_from_gsheets, download_from_gdrive, export_to_sheet
 
 tstart = time.perf_counter()
+# Import posts
+# input_file_posts = "data/sharktank-db-202104.csv"
+# df = pd.read_csv(input_file_posts)
+input_file_posts_link = "https://drive.google.com/file/d/1sE5NLYbI8NP2-00GQCTwm4bFWF0IwteR/view?usp=sharing"
+input_file_posts = download_from_gdrive(input_file_posts_link)
+df = pd.read_csv("Filename.csv")
 
-df = pd.read_csv("data/sharktank-db-202104.csv")
+# Import pages
+# input_file_pages = "data/channels_202104_test.csv"
+# top100 = pd.read_csv(input_file_pages).head(1000)
+input_file_pages_link = "https://docs.google.com/spreadsheets/d/1nVPbm98ZZCpbVF0vluvHxEPftz4lUtnAb9CZv0EF9ew/edit?usp=sharing"
+input_file_pages = download_from_gsheets(input_file_pages_link,sheet='channels_202104')
+top100 = input_file_pages.head(1000)
+top100['linkEntityId'] = top100['linkEntityId'].astype(int)
+
+output_file = "results/top1000_links_apr2021.csv"
+output_link = "https://docs.google.com/spreadsheets/d/199H1tKkyCBVpnCVdfzI2D85DML9E9U_ePZuOua0D3gs/edit?usp=sharing"
+
 df2 = df[~df['linkWebsite'].isna()]
-
-top100 = pd.read_csv("data/channels_202104_test.csv")
-
-def get_agents(pages,posts,index):
-    """
-    Return the unique agents of a certain channel as a set list
-    """
-    site = pages.loc[index]
-    agents = posts[ (posts['linkEntityId'] == site['linkEntityId']) & (posts['linkType'] == site['channelType']) ]['fromProfile']
-    return set(list(agents))
-
-def shared_audience(pages,posts,site_ind1,site_ind2,threshold=0):
-    """
-    Returns the if two channels have a shared audience greater than the threshold,
-    as well as how many common agents they have
-    """
-    agents1 = get_agents(pages,posts,site_ind1)
-    agents2 = get_agents(pages,posts,site_ind2)
-    common_agents = agents1.intersection(agents2)
-
-    if len(common_agents) >= threshold:
-        return {"shared": True, "commons": len(common_agents) }
-    else:
-        return {"shared": False, "commons": len(common_agents) }
-
-#53 for yt, 0 for nonYt
-# shared_audience(top100,df2,0,53)
-
 pages_df = top100
-num_pages = 100
+num_pages = 1000
 
 links = []
 commons = []
@@ -64,7 +53,9 @@ for pair in pairs:
         print(f"Processed {counter} of {total_pairs} pairs")
 
 links = pd.DataFrame(links)
-links.to_csv("results/top100_links_apr2021_test.csv",index=False)
+links.to_csv(output_file,index=False)
+links2 = pd.read_csv(output_file)
+export_to_sheet(links2,output_link,sheet_name="top_all")
 
 tend = time.perf_counter()
 print(f"Time elapsed: {tend-tstart}")
