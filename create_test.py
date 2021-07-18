@@ -12,7 +12,7 @@ tstart = time.perf_counter()
 # input_file_posts = "data/sharktank-db-202104.csv"
 # df = pd.read_csv(input_file_posts)
 input_file_posts_link = "https://drive.google.com/file/d/1sE5NLYbI8NP2-00GQCTwm4bFWF0IwteR/view?usp=sharing"
-input_file_posts = download_from_gdrive(input_file_posts_link)
+# input_file_posts = download_from_gdrive(input_file_posts_link)
 df = pd.read_csv("Filename.csv")
 
 # Import pages
@@ -23,7 +23,7 @@ input_file_pages = download_from_gsheets(input_file_pages_link,sheet='channels_2
 top100 = input_file_pages.head(100)
 top100['linkEntityId'] = top100['linkEntityId'].astype(int)
 
-# output_file = "results/top100_links_apr2021_test.csv"
+output_file = "results/top100_links_apr2021_test.csv"
 output_link = "https://docs.google.com/spreadsheets/d/199H1tKkyCBVpnCVdfzI2D85DML9E9U_ePZuOua0D3gs/edit?usp=sharing"
 
 df2 = df[~df['linkWebsite'].isna()]
@@ -53,8 +53,9 @@ for pair in pairs:
         print(f"Processed {counter} of {total_pairs} pairs")
 
 links = pd.DataFrame(links)
-# links.to_csv(output_file,index=False)
-export_to_sheet(links,output_link,sheet_name="top100")
+links.to_csv(output_file,index=False)
+links2 = pd.read_csv(output_file)
+export_to_sheet(links2,output_link,sheet_name="Sheet5")
 
 tend = time.perf_counter()
 print(f"Time elapsed: {tend-tstart}")
